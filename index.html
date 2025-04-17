@@ -1,9 +1,12 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Файлохранилище</title>
+    <title>File Storage</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: #5C5CFF;
@@ -14,7 +17,7 @@
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Manrope', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
@@ -31,6 +34,7 @@
         h1 {
             color: var(--primary-color);
             margin-bottom: 20px;
+            font-weight: 600;
         }
         
         .search-box {
@@ -48,6 +52,7 @@
             color: var(--text-color);
             width: 100%;
             outline: none;
+            font-family: 'Manrope', sans-serif;
         }
         
         .files-table {
@@ -78,15 +83,47 @@
         .file-link {
             color: var(--primary-color);
             text-decoration: none;
+            transition: opacity 0.2s;
         }
         
-        .file-link:hover {
-            text-decoration: underline;
+        .file-name-link {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .file-name-link:hover {
+            color: var(--primary-color);
         }
         
         .file-icon {
             margin-right: 8px;
             font-size: 1.1em;
+            vertical-align: middle;
+        }
+        
+        .action-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.9em;
+            margin-right: 5px;
+            transition: background 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .action-button:hover {
+            background: #4A4AFF;
+        }
+        
+        .action-button.open {
+            background: #3A3A3D;
+            border: 1px solid var(--primary-color);
         }
         
         .loading {
@@ -95,47 +132,43 @@
             color: var(--primary-color);
         }
         
-        @media (max-width: 768px) {
-            .files-table {
-                display: block;
-                overflow-x: auto;
-            }
-            
-            .search-box {
-                width: 100%;
-            }
+        .error {
+            color: #ff6b6b;
+            padding: 20px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Файлохранилище</h1>
+        <h1>File Storage</h1>
         
         <div class="search-box">
-            <input type="text" placeholder="Поиск файлов..." id="searchInput">
+            <input type="text" placeholder="Search files..." id="searchInput">
         </div>
         
         <table class="files-table">
             <thead>
                 <tr>
-                    <th>Имя файла</th>
-                    <th>Тип</th>
-                    <th>Размер</th>
-                    <th>Скачать</th>
+                    <th>File Name</th>
+                    <th>Type</th>
+                    <th>Size</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody id="filesTableBody">
                 <tr>
-                    <td colspan="4" class="loading">Загрузка файлов...</td>
+                    <td colspan="4" class="loading">Loading files...</td>
                 </tr>
             </tbody>
         </table>
     </div>
 
     <script>
-        // Конфигурация (замените на свои данные)
-        const GITHUB_USER = 'lliteef';
-        const GITHUB_REPO = 'liteef-files';
+        // Получаем переменные окружения Vercel
+        const GITHUB_USER = '<%= process.env.GITHUB_USER %>';
+        const GITHUB_REPO = '<%= process.env.GITHUB_REPO %>';
+        const GITHUB_TOKEN = '<%= process.env.GITHUB_TOKEN %>';
         const GITHUB_BRANCH = 'main';
         const UPLOADS_FOLDER = 'uploads';
         
@@ -146,7 +179,7 @@
             
             document.getElementById('searchInput').addEventListener('input', function(e) {
                 const searchTerm = e.target.value.toLowerCase();
-                const rows = document.querySelectorAll('#filesTableBody tr');
+                const rows = document.querySelectorAll('#filesTableBody tr:not(.loading)');
                 
                 rows.forEach(row => {
                     const fileName = row.querySelector('td:first-child').textContent.toLowerCase();
@@ -157,26 +190,22 @@
         
         async function loadFilesFromGitHub() {
             try {
-                const response = await fetch(GITHUB_API_URL);
+                const response = await fetch(GITHUB_API_URL, {
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
                 
                 if (!response.ok) {
-                    throw new Error(`Ошибка HTTP: ${response.status}`);
+                    throw new Error(`HTTP error: ${response.status}`);
                 }
                 
                 const files = await response.json();
                 displayFiles(files);
             } catch (error) {
-                console.error('Ошибка загрузки файлов:', error);
-                document.getElementById('filesTableBody').innerHTML = `
-                    <tr>
-                        <td colspan="4" style="color: #ff6b6b;">
-                            Ошибка загрузки файлов. Проверьте:<br>
-                            1. Правильность указания репозитория<br>
-                            2. Что папка uploads существует<br>
-                            3. Что репозиторий публичный
-                        </td>
-                    </tr>
-                `;
+                console.error('Error loading files:', error);
+                showError();
             }
         }
         
@@ -185,7 +214,7 @@
             tableBody.innerHTML = '';
             
             if (!files || files.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="4">В папке нет файлов</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="4">No files found</td></tr>';
                 return;
             }
             
@@ -198,19 +227,37 @@
                     row.innerHTML = `
                         <td>
                             <span class="file-icon">${getFileIcon(fileExt)}</span>
-                            ${file.name}
+                            <a href="${file.download_url}" class="file-name-link" target="_blank">
+                                ${file.name}
+                            </a>
                         </td>
                         <td>${fileType}</td>
                         <td>${formatFileSize(file.size)}</td>
                         <td>
-                            <a href="${file.download_url}" class="file-link" download>
-                                Скачать
+                            <a href="${file.download_url}" class="action-button" download>
+                                Download
+                            </a>
+                            <a href="${file.download_url}" class="action-button open" target="_blank">
+                                Open ↗
                             </a>
                         </td>
                     `;
                     tableBody.appendChild(row);
                 }
             });
+        }
+        
+        function showError() {
+            document.getElementById('filesTableBody').innerHTML = `
+                <tr>
+                    <td colspan="4" class="error">
+                        Failed to load files. Check:<br>
+                        1. Repository settings<br>
+                        2. Environment variables in Vercel<br>
+                        3. GitHub token permissions
+                    </td>
+                </tr>
+            `;
         }
         
         function getFileIcon(ext) {
@@ -238,18 +285,18 @@
                 doc: 'Word', docx: 'Word',
                 xls: 'Excel', xlsx: 'Excel',
                 ppt: 'PowerPoint', pptx: 'PowerPoint',
-                jpg: 'Изображение', jpeg: 'Изображение', png: 'Изображение', 
-                gif: 'Изображение', svg: 'Изображение',
-                mp3: 'Аудио', wav: 'Аудио', ogg: 'Аудио',
-                mp4: 'Видео', avi: 'Видео', mov: 'Видео', mkv: 'Видео',
-                zip: 'Архив', rar: 'Архив', '7z': 'Архив',
-                exe: 'Программа', dmg: 'Программа',
+                jpg: 'Image', jpeg: 'Image', png: 'Image', 
+                gif: 'Image', svg: 'Image',
+                mp3: 'Audio', wav: 'Audio', ogg: 'Audio',
+                mp4: 'Video', avi: 'Video', mov: 'Video', mkv: 'Video',
+                zip: 'Archive', rar: 'Archive', '7z': 'Archive',
+                exe: 'Program', dmg: 'Program',
                 psd: 'Photoshop', ai: 'Illustrator',
-                txt: 'Текст', csv: 'Таблица', json: 'Данные',
-                html: 'Веб-страница', css: 'Стили', js: 'Скрипт', ts: 'Скрипт',
+                txt: 'Text', csv: 'Spreadsheet', json: 'Data',
+                html: 'Web Page', css: 'Styles', js: 'Script', ts: 'Script',
                 py: 'Python', java: 'Java', cpp: 'C++'
             };
-            return types[ext] || 'Файл';
+            return types[ext] || 'File';
         }
         
         function formatFileSize(bytes) {
