@@ -188,120 +188,136 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Получаем список файлов из папки uploads
-            fetch('listFiles.php')
-                .then(response => response.json())
-                .then(files => {
-                    const filesGrid = document.getElementById('filesGrid');
-                    
-                    if (files.length === 0) {
-                        filesGrid.innerHTML = '<p>В папке нет файлов</p>';
-                        return;
-                    }
-                    
-                    files.forEach(file => {
-                        const fileCard = createFileCard(file);
-                        filesGrid.appendChild(fileCard);
-                    });
-                    
-                    // Добавляем обработчик поиска
-                    document.getElementById('searchInput').addEventListener('input', function(e) {
-                        const searchTerm = e.target.value.toLowerCase();
-                        const cards = document.querySelectorAll('.file-card');
-                        
-                        cards.forEach(card => {
-                            const fileName = card.querySelector('.file-name').textContent.toLowerCase();
-                            if (fileName.includes(searchTerm)) {
-                                card.style.display = 'flex';
-                            } else {
-                                card.style.display = 'none';
-                            }
-                        });
-                    });
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    document.getElementById('filesGrid').innerHTML = '<p>Не удалось загрузить список файлов</p>';
+            // Эмуляция данных файлов (замените на реальные файлы из папки uploads)
+            const mockFiles = [
+                { name: 'example.pdf', size: 2456789, modified: Date.now() - 86400000 },
+                { name: 'image.jpg', size: 1234567, modified: Date.now() - 172800000 },
+                { name: 'document.docx', size: 345678, modified: Date.now() - 259200000 },
+                { name: 'presentation.pptx', size: 4567890, modified: Date.now() - 345600000 },
+                { name: 'spreadsheet.xlsx', size: 987654, modified: Date.now() - 432000000 },
+                { name: 'archive.zip', size: 56789012, modified: Date.now() - 518400000 }
+            ];
+            
+            // Функция для загрузки реальных файлов из папки uploads
+            function loadRealFiles() {
+                // В реальной реализации здесь должен быть fetch к серверному скрипту
+                // который вернет список файлов в формате JSON
+                // Мы используем mockFiles для демонстрации
+                displayFiles(mockFiles);
+            }
+            
+            // Отображение файлов
+            function displayFiles(files) {
+                const filesGrid = document.getElementById('filesGrid');
+                filesGrid.innerHTML = '';
+                
+                if (files.length === 0) {
+                    filesGrid.innerHTML = '<p>В папке нет файлов</p>';
+                    return;
+                }
+                
+                files.forEach(file => {
+                    const fileCard = createFileCard(file);
+                    filesGrid.appendChild(fileCard);
                 });
+                
+                // Добавляем обработчик поиска
+                document.getElementById('searchInput').addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.toLowerCase();
+                    const cards = document.querySelectorAll('.file-card');
+                    
+                    cards.forEach(card => {
+                        const fileName = card.querySelector('.file-name').textContent.toLowerCase();
+                        if (fileName.includes(searchTerm)) {
+                            card.style.display = 'flex';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            }
+            
+            function createFileCard(file) {
+                const card = document.createElement('a');
+                card.className = 'file-card';
+                card.href = `uploads/${file.name}`;
+                card.target = '_blank';
+                
+                const icon = document.createElement('div');
+                icon.className = 'file-icon';
+                icon.innerHTML = getFileIcon(file.name);
+                
+                const name = document.createElement('div');
+                name.className = 'file-name';
+                name.textContent = file.name;
+                
+                const info = document.createElement('div');
+                info.className = 'file-info';
+                
+                const size = document.createElement('div');
+                size.className = 'file-size';
+                size.textContent = formatFileSize(file.size);
+                
+                const modified = document.createElement('div');
+                modified.textContent = new Date(file.modified).toLocaleDateString();
+                
+                info.appendChild(size);
+                info.appendChild(modified);
+                
+                card.appendChild(icon);
+                card.appendChild(name);
+                card.appendChild(info);
+                
+                return card;
+            }
+            
+            function getFileIcon(filename) {
+                const ext = filename.split('.').pop().toLowerCase();
+                const icons = {
+                    pdf: '📄',
+                    doc: '📝',
+                    docx: '📝',
+                    xls: '📊',
+                    xlsx: '📊',
+                    ppt: '📑',
+                    pptx: '📑',
+                    jpg: '🖼️',
+                    jpeg: '🖼️',
+                    png: '🖼️',
+                    gif: '🖼️',
+                    mp3: '🎵',
+                    wav: '🎵',
+                    mp4: '🎬',
+                    avi: '🎬',
+                    mov: '🎬',
+                    zip: '🗄️',
+                    rar: '🗄️',
+                    exe: '⚙️',
+                    dmg: '💽',
+                    psd: '🎨',
+                    ai: '🎨',
+                    txt: '📋',
+                    csv: '📋',
+                    html: '🌐',
+                    css: '🎨',
+                    js: '📜',
+                    json: '📜'
+                };
+                
+                return icons[ext] || '📁';
+            }
+            
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+            
+            // Загружаем файлы при старте
+            loadRealFiles();
         });
-        
-        function createFileCard(file) {
-            const card = document.createElement('a');
-            card.className = 'file-card';
-            card.href = `uploads/${file.name}`;
-            card.target = '_blank';
-            
-            const icon = document.createElement('div');
-            icon.className = 'file-icon';
-            icon.innerHTML = getFileIcon(file.name);
-            
-            const name = document.createElement('div');
-            name.className = 'file-name';
-            name.textContent = file.name;
-            
-            const info = document.createElement('div');
-            info.className = 'file-info';
-            
-            const size = document.createElement('div');
-            size.className = 'file-size';
-            size.textContent = formatFileSize(file.size);
-            
-            const modified = document.createElement('div');
-            modified.textContent = new Date(file.modified).toLocaleDateString();
-            
-            info.appendChild(size);
-            info.appendChild(modified);
-            
-            card.appendChild(icon);
-            card.appendChild(name);
-            card.appendChild(info);
-            
-            return card;
-        }
-        
-        function getFileIcon(filename) {
-            const ext = filename.split('.').pop().toLowerCase();
-            const icons = {
-                pdf: '📄',
-                doc: '📝',
-                docx: '📝',
-                xls: '📊',
-                xlsx: '📊',
-                ppt: '📑',
-                pptx: '📑',
-                jpg: '🖼️',
-                jpeg: '🖼️',
-                png: '🖼️',
-                gif: '🖼️',
-                mp3: '🎵',
-                wav: '🎵',
-                mp4: '🎬',
-                avi: '🎬',
-                mov: '🎬',
-                zip: '🗄️',
-                rar: '🗄️',
-                exe: '⚙️',
-                dmg: '💽',
-                psd: '🎨',
-                ai: '🎨',
-                txt: '📋',
-                csv: '📋',
-                html: '🌐',
-                css: '🎨',
-                js: '📜',
-                json: '📜'
-            };
-            
-            return icons[ext] || '📁';
-        }
-        
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
     </script>
 </body>
 </html>
