@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File Storage</title>
+    <!-- Подключение Manrope -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
@@ -86,6 +87,10 @@
             transition: opacity 0.2s;
         }
         
+        .file-link:hover {
+            opacity: 0.8;
+        }
+        
         .file-name-link {
             color: var(--text-color);
             text-decoration: none;
@@ -126,16 +131,25 @@
             border: 1px solid var(--primary-color);
         }
         
+        .action-button.open:hover {
+            background: #4A4A4D;
+        }
+        
         .loading {
             padding: 20px;
             text-align: center;
             color: var(--primary-color);
         }
         
-        .error {
-            color: #ff6b6b;
-            padding: 20px;
-            text-align: center;
+        @media (max-width: 768px) {
+            .files-table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -165,10 +179,9 @@
     </div>
 
     <script>
-        // Получаем переменные окружения Vercel
-        const GITHUB_USER = '<%= process.env.GITHUB_USER %>';
-        const GITHUB_REPO = '<%= process.env.GITHUB_REPO %>';
-        const GITHUB_TOKEN = '<%= process.env.GITHUB_TOKEN %>';
+        // Configuration (replace with your data)
+        const GITHUB_USER = 'lliteef';
+        const GITHUB_REPO = 'liteef-files';
         const GITHUB_BRANCH = 'main';
         const UPLOADS_FOLDER = 'uploads';
         
@@ -179,7 +192,7 @@
             
             document.getElementById('searchInput').addEventListener('input', function(e) {
                 const searchTerm = e.target.value.toLowerCase();
-                const rows = document.querySelectorAll('#filesTableBody tr:not(.loading)');
+                const rows = document.querySelectorAll('#filesTableBody tr');
                 
                 rows.forEach(row => {
                     const fileName = row.querySelector('td:first-child').textContent.toLowerCase();
@@ -190,12 +203,7 @@
         
         async function loadFilesFromGitHub() {
             try {
-                const response = await fetch(GITHUB_API_URL, {
-                    headers: {
-                        'Authorization': `token ${GITHUB_TOKEN}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
+                const response = await fetch(GITHUB_API_URL);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error: ${response.status}`);
@@ -205,7 +213,16 @@
                 displayFiles(files);
             } catch (error) {
                 console.error('Error loading files:', error);
-                showError();
+                document.getElementById('filesTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="4" style="color: #ff6b6b;">
+                            Failed to load files. Check:<br>
+                            1. Repository name<br>
+                            2. "uploads" folder exists<br>
+                            3. Repository is public
+                        </td>
+                    </tr>
+                `;
             }
         }
         
@@ -245,19 +262,6 @@
                     tableBody.appendChild(row);
                 }
             });
-        }
-        
-        function showError() {
-            document.getElementById('filesTableBody').innerHTML = `
-                <tr>
-                    <td colspan="4" class="error">
-                        Failed to load files. Check:<br>
-                        1. Repository settings<br>
-                        2. Environment variables in Vercel<br>
-                        3. GitHub token permissions
-                    </td>
-                </tr>
-            `;
         }
         
         function getFileIcon(ext) {
