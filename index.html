@@ -127,27 +127,15 @@
             text-decoration: underline;
         }
         
-        .file-actions {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 15px;
-        }
-        
-        .download-btn {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 5px 10px;
-            cursor: pointer;
-            font-size: 12px;
-            text-decoration: none;
-            display: inline-block;
-        }
-        
         .file-size {
             font-size: 12px;
             color: var(--text-secondary);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--primary-color);
         }
         
         @media (max-width: 768px) {
@@ -182,142 +170,114 @@
         </div>
         
         <div class="files-grid" id="filesGrid">
-            <!-- Файлы будут загружены здесь -->
+            <div class="loading">Загрузка файлов...</div>
         </div>
     </div>
 
     <script>
+        // Конфигурация (замените на свои данные)
+        const GITHUB_USER = 'lliteef';
+        const GITHUB_REPO = 'liteef-files';
+        const GITHUB_BRANCH = 'main'; // или другая ветка
+        const UPLOADS_FOLDER = 'uploads'; // папка с файлами
+        
+        // Полный URL к API GitHub
+        const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${UPLOADS_FOLDER}?ref=${GITHUB_BRANCH}`;
+        
         document.addEventListener('DOMContentLoaded', function() {
-            // Эмуляция данных файлов (замените на реальные файлы из папки uploads)
-            const mockFiles = [
-                { name: 'example.pdf', size: 2456789, modified: Date.now() - 86400000 },
-                { name: 'image.jpg', size: 1234567, modified: Date.now() - 172800000 },
-                { name: 'document.docx', size: 345678, modified: Date.now() - 259200000 },
-                { name: 'presentation.pptx', size: 4567890, modified: Date.now() - 345600000 },
-                { name: 'spreadsheet.xlsx', size: 987654, modified: Date.now() - 432000000 },
-                { name: 'archive.zip', size: 56789012, modified: Date.now() - 518400000 }
-            ];
+            loadFilesFromGitHub();
             
-            // Функция для загрузки реальных файлов из папки uploads
-            function loadRealFiles() {
-                // В реальной реализации здесь должен быть fetch к серверному скрипту
-                // который вернет список файлов в формате JSON
-                // Мы используем mockFiles для демонстрации
-                displayFiles(mockFiles);
-            }
-            
-            // Отображение файлов
-            function displayFiles(files) {
-                const filesGrid = document.getElementById('filesGrid');
-                filesGrid.innerHTML = '';
+            // Поиск файлов
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const cards = document.querySelectorAll('.file-card');
                 
-                if (files.length === 0) {
-                    filesGrid.innerHTML = '<p>В папке нет файлов</p>';
-                    return;
+                cards.forEach(card => {
+                    const fileName = card.querySelector('.file-name').textContent.toLowerCase();
+                    card.style.display = fileName.includes(searchTerm) ? 'flex' : 'none';
+                });
+            });
+        });
+        
+        async function loadFilesFromGitHub() {
+            try {
+                const response = await fetch(GITHUB_API_URL);
+                
+                if (!response.ok) {
+                    throw new Error(`Ошибка HTTP: ${response.status}`);
                 }
                 
-                files.forEach(file => {
-                    const fileCard = createFileCard(file);
-                    filesGrid.appendChild(fileCard);
-                });
-                
-                // Добавляем обработчик поиска
-                document.getElementById('searchInput').addEventListener('input', function(e) {
-                    const searchTerm = e.target.value.toLowerCase();
-                    const cards = document.querySelectorAll('.file-card');
+                const files = await response.json();
+                displayFiles(files);
+            } catch (error) {
+                console.error('Ошибка загрузки файлов:', error);
+                document.getElementById('filesGrid').innerHTML = `
+                    <p style="color: #ff6b6b;">Ошибка загрузки файлов. Проверьте:<br>
+                    1. Правильность указания репозитория<br>
+                    2. Что папка uploads существует<br>
+                    3. Что репозиторий публичный</p>
+                `;
+            }
+        }
+        
+        function displayFiles(files) {
+            const filesGrid = document.getElementById('filesGrid');
+            
+            if (!files || files.length === 0) {
+                filesGrid.innerHTML = '<p>В папке нет файлов</p>';
+                return;
+            }
+            
+            filesGrid.innerHTML = '';
+            
+            files.forEach(file => {
+                if (file.type === 'file') { // Показываем только файлы, не папки
+                    const fileCard = document.createElement('a');
+                    fileCard.className = 'file-card';
+                    fileCard.href = file.download_url;
+                    fileCard.target = '_blank';
                     
-                    cards.forEach(card => {
-                        const fileName = card.querySelector('.file-name').textContent.toLowerCase();
-                        if (fileName.includes(searchTerm)) {
-                            card.style.display = 'flex';
-                        } else {
-                            card.style.display = 'none';
-                        }
-                    });
-                });
-            }
+                    fileCard.innerHTML = `
+                        <div class="file-icon">${getFileIcon(file.name)}</div>
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-info">
+                            <div class="file-size">${formatFileSize(file.size)}</div>
+                        </div>
+                    `;
+                    
+                    filesGrid.appendChild(fileCard);
+                }
+            });
+        }
+        
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const icons = {
+                pdf: '📄',
+                doc: '📝', docx: '📝',
+                xls: '📊', xlsx: '📊',
+                ppt: '📑', pptx: '📑',
+                jpg: '🖼️', jpeg: '🖼️', png: '🖼️', gif: '🖼️', svg: '🖼️',
+                mp3: '🎵', wav: '🎵', ogg: '🎵',
+                mp4: '🎬', avi: '🎬', mov: '🎬', mkv: '🎬',
+                zip: '🗄️', rar: '🗄️', '7z': '🗄️', gz: '🗄️',
+                exe: '⚙️', dmg: '💽', pkg: '📦',
+                psd: '🎨', ai: '🎨', sketch: '🎨',
+                txt: '📋', csv: '📋', json: '📋',
+                html: '🌐', css: '🎨', js: '📜', ts: '📜',
+                py: '🐍', java: '☕', cpp: '🔧', cs: '🔧'
+            };
             
-            function createFileCard(file) {
-                const card = document.createElement('a');
-                card.className = 'file-card';
-                card.href = `uploads/${file.name}`;
-                card.target = '_blank';
-                
-                const icon = document.createElement('div');
-                icon.className = 'file-icon';
-                icon.innerHTML = getFileIcon(file.name);
-                
-                const name = document.createElement('div');
-                name.className = 'file-name';
-                name.textContent = file.name;
-                
-                const info = document.createElement('div');
-                info.className = 'file-info';
-                
-                const size = document.createElement('div');
-                size.className = 'file-size';
-                size.textContent = formatFileSize(file.size);
-                
-                const modified = document.createElement('div');
-                modified.textContent = new Date(file.modified).toLocaleDateString();
-                
-                info.appendChild(size);
-                info.appendChild(modified);
-                
-                card.appendChild(icon);
-                card.appendChild(name);
-                card.appendChild(info);
-                
-                return card;
-            }
-            
-            function getFileIcon(filename) {
-                const ext = filename.split('.').pop().toLowerCase();
-                const icons = {
-                    pdf: '📄',
-                    doc: '📝',
-                    docx: '📝',
-                    xls: '📊',
-                    xlsx: '📊',
-                    ppt: '📑',
-                    pptx: '📑',
-                    jpg: '🖼️',
-                    jpeg: '🖼️',
-                    png: '🖼️',
-                    gif: '🖼️',
-                    mp3: '🎵',
-                    wav: '🎵',
-                    mp4: '🎬',
-                    avi: '🎬',
-                    mov: '🎬',
-                    zip: '🗄️',
-                    rar: '🗄️',
-                    exe: '⚙️',
-                    dmg: '💽',
-                    psd: '🎨',
-                    ai: '🎨',
-                    txt: '📋',
-                    csv: '📋',
-                    html: '🌐',
-                    css: '🎨',
-                    js: '📜',
-                    json: '📜'
-                };
-                
-                return icons[ext] || '📁';
-            }
-            
-            function formatFileSize(bytes) {
-                if (bytes === 0) return '0 Bytes';
-                const k = 1024;
-                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-                const i = Math.floor(Math.log(bytes) / Math.log(k));
-                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-            }
-            
-            // Загружаем файлы при старте
-            loadRealFiles();
-        });
+            return icons[ext] || '📁';
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
     </script>
 </body>
 </html>
