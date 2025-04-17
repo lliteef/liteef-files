@@ -1,15 +1,307 @@
-<html>
+<!DOCTYPE html>
+<html lang="ru">
 <head>
-    <meta charset="utf-8">
-
-    <meta property="og:title" content='Liteef File Storage' />
-    <meta property="og:description" content="Liteef File Storage" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://files.liteef.sbs" />
-    <meta http-equiv="refresh" content="0; url=https://liteef.sbs" />
-    <meta name="twitter:card" content="summary_large_image">
-
-    <title>Liteef File Storage</title>
-    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Файлохранилище</title>
+    <style>
+        :root {
+            --primary-color: #5C5CFF;
+            --bg-color: #1E1E20;
+            --card-bg: #2D2D30;
+            --text-color: #E1E1E1;
+            --text-secondary: #A0A0A0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #3E3E40;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin: 0;
+        }
+        
+        .search-box {
+            display: flex;
+            background: var(--card-bg);
+            border-radius: 20px;
+            overflow: hidden;
+            padding: 5px 15px;
+            width: 300px;
+        }
+        
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            width: 100%;
+            outline: none;
+            padding: 8px;
+        }
+        
+        .search-box button {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        
+        .files-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .file-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .file-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .file-icon {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+        
+        .file-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            word-break: break-word;
+        }
+        
+        .file-info {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: auto;
+        }
+        
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+        }
+        
+        .breadcrumb a {
+            color: var(--primary-color);
+            text-decoration: none;
+            margin: 0 5px;
+        }
+        
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        
+        .file-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+        
+        .download-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 12px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .file-size {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        @media (max-width: 768px) {
+            .files-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .search-box {
+                width: 100%;
+                margin-top: 15px;
+            }
+        }
+    </style>
 </head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Файлохранилище</h1>
+            <div class="search-box">
+                <input type="text" placeholder="Поиск файлов..." id="searchInput">
+                <button type="button">🔍</button>
+            </div>
+        </header>
+        
+        <div class="breadcrumb">
+            <a href="/">Главная</a> / <span>uploads</span>
+        </div>
+        
+        <div class="files-grid" id="filesGrid">
+            <!-- Файлы будут загружены здесь -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Получаем список файлов из папки uploads
+            fetch('listFiles.php')
+                .then(response => response.json())
+                .then(files => {
+                    const filesGrid = document.getElementById('filesGrid');
+                    
+                    if (files.length === 0) {
+                        filesGrid.innerHTML = '<p>В папке нет файлов</p>';
+                        return;
+                    }
+                    
+                    files.forEach(file => {
+                        const fileCard = createFileCard(file);
+                        filesGrid.appendChild(fileCard);
+                    });
+                    
+                    // Добавляем обработчик поиска
+                    document.getElementById('searchInput').addEventListener('input', function(e) {
+                        const searchTerm = e.target.value.toLowerCase();
+                        const cards = document.querySelectorAll('.file-card');
+                        
+                        cards.forEach(card => {
+                            const fileName = card.querySelector('.file-name').textContent.toLowerCase();
+                            if (fileName.includes(searchTerm)) {
+                                card.style.display = 'flex';
+                            } else {
+                                card.style.display = 'none';
+                            }
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('filesGrid').innerHTML = '<p>Не удалось загрузить список файлов</p>';
+                });
+        });
+        
+        function createFileCard(file) {
+            const card = document.createElement('a');
+            card.className = 'file-card';
+            card.href = `uploads/${file.name}`;
+            card.target = '_blank';
+            
+            const icon = document.createElement('div');
+            icon.className = 'file-icon';
+            icon.innerHTML = getFileIcon(file.name);
+            
+            const name = document.createElement('div');
+            name.className = 'file-name';
+            name.textContent = file.name;
+            
+            const info = document.createElement('div');
+            info.className = 'file-info';
+            
+            const size = document.createElement('div');
+            size.className = 'file-size';
+            size.textContent = formatFileSize(file.size);
+            
+            const modified = document.createElement('div');
+            modified.textContent = new Date(file.modified).toLocaleDateString();
+            
+            info.appendChild(size);
+            info.appendChild(modified);
+            
+            card.appendChild(icon);
+            card.appendChild(name);
+            card.appendChild(info);
+            
+            return card;
+        }
+        
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const icons = {
+                pdf: '📄',
+                doc: '📝',
+                docx: '📝',
+                xls: '📊',
+                xlsx: '📊',
+                ppt: '📑',
+                pptx: '📑',
+                jpg: '🖼️',
+                jpeg: '🖼️',
+                png: '🖼️',
+                gif: '🖼️',
+                mp3: '🎵',
+                wav: '🎵',
+                mp4: '🎬',
+                avi: '🎬',
+                mov: '🎬',
+                zip: '🗄️',
+                rar: '🗄️',
+                exe: '⚙️',
+                dmg: '💽',
+                psd: '🎨',
+                ai: '🎨',
+                txt: '📋',
+                csv: '📋',
+                html: '🌐',
+                css: '🎨',
+                js: '📜',
+                json: '📜'
+            };
+            
+            return icons[ext] || '📁';
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    </script>
+</body>
 </html>
