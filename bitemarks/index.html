@@ -1,0 +1,353 @@
+<html><meta charset="utf-8">
+
+<meta property="og:title" content="Bite Marks">
+<meta property="og:description" content="Single by TEYA & League of Legends">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://go.idealeurovision.one/">
+<meta property="og:image" content="images/bg24.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="shortcut icon" type="image/x-icon" href="/images/heart.ico/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&amp;display=swap" rel="stylesheet">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+* {
+	margin:0;
+	padding:0;
+}
+
+body {
+
+
+	width:100%;
+
+	min-width:360px;
+	font-family: 'Montserrat', sans-serif;
+		user-select:none;
+	color: #212121;
+
+	overflow-x:hidden;
+}
+.bg {
+  position: absolute;
+
+}
+.info-wrapper {	
+	width:100%;
+	height:100%;
+	display:flex;
+	justify-content:center;
+	align-items:center;
+	flex-direction: column;
+}
+.info-blocks {
+width:50%;
+height:50%;
+	border-radius: 15px;
+	display: flex;
+	padding:0;
+	margin-bottom:25px;
+	
+}
+.block {
+
+	width:50%;
+}
+.block.first {
+	background-color: rgba(133,133,255,0.5);
+	border-top-left-radius: 8px;
+	border-bottom-left-radius:8px;
+}
+.block.second {
+	background-color: rgba(133,133,255,0.4);
+		border-top-right-radius: 8px;
+	border-bottom-right-radius:8px;
+	
+}
+.layer {
+	width:100%;
+
+	display:flex;
+	justify-content:center;
+	align-items:center;
+	pointer-events: auto;
+}
+.me {
+	width:100%;
+	height:100%;
+	display:flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items:center;
+	margin-top:-10px;
+}
+
+@media screen and (max-width: 1390px){
+	.info-blocks {
+width:80% !important;
+
+}
+}
+@media screen and (min-width: 900px){
+.info-blocks {
+margin-top:-50px;
+}
+.info-wrapper {
+	height:100vh;
+}
+
+.avatar {
+			margin-bottom:25px !important;
+}
+}
+
+@media screen and (max-width: 900px){
+	
+	.overlay {
+		display: none;
+	}
+	.button {
+		height:20% !important;
+	}
+	.block {
+		width:100%;
+	}
+		.info-blocks {
+		width:90% !important;
+		height:fit-content;
+	flex-direction:column;
+	}
+	.block.first {
+		background-color: rgba(133,133,255,0.5);
+		border-top-left-radius: 8px;
+		border-top-right-radius: 8px;
+		border-bottom-left-radius:0px;
+		
+
+
+	}
+
+	.block.second {
+		background-color: rgba(133,133,255,0.5);
+			border-top-right-radius: 0px;
+			border-bottom-left-radius:8px;
+		border-bottom-right-radius:8px;
+	}
+	.info-wrapper {
+		justify-content: flex-start !important;
+		padding-top: 15px;
+	}
+	.avatar {
+		margin-top:25px;
+
+	}
+	.second {
+		padding: 15px 0;
+	}
+	.me {
+		margin-bottom: 20px;
+	}
+
+	.button {
+		padding: 10px 0;
+	}
+
+}
+.avatar{
+	width:300px;
+	height:300px;
+	border-radius:8px;
+	object-fit:cover;
+	margin-bottom:15px;
+}
+.contacts {
+	display:flex;
+	justify-content:center;
+	align-items:center;
+	flex-direction:column;
+	width:100%;
+	height: 100%;
+
+}
+.button {
+	-webkit-appearance: button;
+	-moz-appearance: button;
+	appearance: button;
+
+	text-decoration: none;
+	color: initial;
+	
+	width:70%;
+	height:10%;
+	background-color:rgba(0,0,0,0.5);
+	border-radius: 8px;
+	padding-left:25px;
+	
+	display:flex;
+	justify-content:flex-start;
+	align-items:center;
+	color:white;
+	
+	margin: 5px ;
+		font-family: 'Montserrat', sans-serif;
+	border: none;
+	cursor:pointer;
+	
+-webkit-box-shadow: 1px 3px 10px -3px rgba(0,0,0,0.6); 
+box-shadow: 1px 3px 10px -3px rgba(0,0,0,0.6);
+}
+.button:hover {
+	background-color: rgba(0,0,0,0.3) !important;
+	transition: background-color 0.2s;
+}
+.button:active {
+	background-color: rgba(0,0,0,0.7) !important;
+	transition: background-color 0.1s;
+}
+.button:focus {
+	background-color: rgba(0,0,0,0.3) !important;
+	transition: background-color 0.2s;
+}
+.store-icon {
+	width: 30px;
+	height: auto;
+	margin-right: 20px;
+}
+.overlay {
+	width: 100%;
+	height: 100%;
+	position: fixed;
+	z-index: 99999 !important;
+	pointer-events: none;
+
+
+}
+
+.logo-wrapper:hover {
+	transition: opacity 0.3s;
+		
+
+	opacity: 1;
+}
+
+.logo-wrapper {
+	pointer-events: auto !important;
+
+
+
+	width: 100%;
+	height: 10%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	
+	position: absolute;
+	top: 90%;
+
+}
+#iesclink {
+	transition: opacity 0.3s;
+	opacity: 0.6;
+}
+
+#iesclink:hover {
+	transition: opacity 0.3s;
+	opacity: 1;
+
+
+}
+.beautiful-link {
+color: #3b3a3a;
+text-decoration: none;
+border-bottom: 2px solid;
+border-bottom-color: rgba(59, 58, 58,0.25);
+}
+.beautiful-link:hover {
+border-bottom-color: rgba(59, 58, 58,1);
+}
+
+.all-wrapper {
+
+min-height:100vh;
+
+	  background: url("https://idealeurovision.one/images/slbg.png") no-repeat center;
+  background-size: cover;
+}
+
+.credits {
+	position:absolute;
+	bottom:5px; 
+	right:10px;
+	opacity: 0;
+	pointer-events: auto;
+	transition: opacity 0.2s;
+	
+text-shadow: 1px 1px 5px #FFFFFF;
+}
+.credits:hover {
+	opacity: 1 !important;
+	transition: opacity 0.2s;
+}
+
+img {
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+
+}
+</style>
+<title>Ideal Eurovision</title></head>
+
+<body>
+
+<div class="overlay">
+	<div class="logo-wrapper">
+				<a href="https://idealeurovision.one" id="iesclink" target="_blank" style="margin:0;">
+				<img src="https://i.postimg.cc/DzdbnTbL/logo.png" style="user-select:none; width:110px; height:auto; margin-top:10%;">
+				</a>
+	</div>
+</div>
+<div id="scene" class="bg" style="width:100%; 	min-height:100vh;">
+<div class="all-wrapper">
+  <div data-depth="0.1" class="layer">
+	<div class="info-wrapper">
+		<div class="info-blocks" style="">
+		<div class="block first">
+			<div class="me">
+				<img src="https://idealeurovision.one/images/bitemarks.png" class="avatar">
+				<h1 style="margin-bottom:1px;">Bite Marks</h1>
+				<div>
+				<h3 target="_blank" style="display: inline-block;">TEYA & League of Legends</h3></div>	
+			</div>
+		</div>
+		<div class="block second">
+			<div class="contacts">
+			    <!-- <a href="/apply" class="button"><img class="store-icon" alt="Voting logo" src="https://i.postimg.cc/50r9M7p8/vote.png">Application</a> -->
+			    <a href="https://open.spotify.com/album/7vMVO2CFVTP2SwzUiaWvid" class="button" rel="noopener"><img class="store-icon" alt="Spotify logo" src="https://idealeurovision.one/images/spotify.png">Spotify</a>
+				<a href="https://geo.music.apple.com/album/1788974484" class="button" rel="noopener"><img class="store-icon" alt="Apple logo" src="https://idealeurovision.one/images/applemusic.svg">Apple Music</a>
+				<a href="https://www.youtube.com/watch?v=I76wvt0aEE4" class="button" rel="noopener"><img class="store-icon" alt="Youtube logo" src="https://i.postimg.cc/02RMMjdD/yt.png">YouTube</a>
+				<a href="https://league.ffm.to/bitemarks" class="button" rel="noopener">→ Other Services</a><br>
+				<a href="/" class="button" rel="noopener">← Back to Portal</a>
+				<!-- <a target="_blank" href="/bonus" class="button"><img class="store-icon" alt="Voting logo" src="https://i.postimg.cc/50r9M7p8/vote.png">Bonus Content</a> -->
+				<!-- <div class="button"><img class="store-icon" alt="ESC logo" src="https://i.postimg.cc/76zPw1Rc/heart.png">Dashboard (Soon)</div> -->
+			</div>
+		</div>
+
+		</div>
+
+	</div>
+  </div>
+</div>
+</div>
+</body></html>
